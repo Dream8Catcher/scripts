@@ -1,6 +1,5 @@
 #!/bin/bash
 
-#php -v | grep -q 'PHP 7.' || { echo "Please set PHP to 7.X"; exit 1; }
 echo "Current PHP version is $(php -v | grep "PHP [5-8]" | cut -d' ' -f 2)"
 read -rp "Do you want to proceed? [y/n]: " CHOICE 
 [[ ! "${CHOICE}" =~ ^[yY](es)?$ ]] && { echo "Ok, next time"; exit 1; }
