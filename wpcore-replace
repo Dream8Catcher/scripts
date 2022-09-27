@@ -1,17 +1,35 @@
 #!/bin/bash
 
+# A quick check what PHP version is in use. WP cli does not work properly with PHP below 7.0.
 echo "Current PHP version is $(php -v | grep "PHP [5-8]" | cut -d' ' -f 2)"
-read -rp "Do you want to proceed? [y/n]: " CHOICE 
+read -rp "Do you want to proceed? PHP 7.0+ is recommended. Otherwise, data loss will occure, exit the script. [y/n]: " CHOICE
 [[ ! "${CHOICE}" =~ ^[yY](es)?$ ]] && { echo "Ok, next time"; exit 1; }
-for i in "$@"; do
-  cd "$HOME/$i"
+
+echo "Searching for WP installations. Warning: installations in ~/folder/subfolder will not be procecced" | tee ~/replacer.log
+find ~/ -name "wp-config.php" -type f | cut -d'/' -f 4 2>/dev/null | sort -u > ~/wplist
+echo "Found $(wc -l < ~/wplist) installations. About to process them..." | tee -a ~/replacer.log
+
+mapfile -t arr < ~/wplist
+
+for i in "${arr[@]}"; do 
+  cd "$HOME/$i" || exit
+  echo "Entered $HOME/$i" | tee -a ~/replacer.log
   if [[ ! -f "./wp-config.php" ]]; then
-    echo "Skipped for ${PWD}"
+    echo "Skipped for ${PWD}" | tee -a ~/replacer.log
   else
     CORE_VERSION=$(wp core version)
     rm -rf wp-includes wp-admin
+    echo "Removed wp-includes wp-admin" | tee -a ~/replacer.log
+    # To avoid any issues where index.php has invalid perms
+    chmod 644 index.php
     wp core download --version="$CORE_VERSION" --skip-content --force
-    echo "Replaced for ${PWD}"
+    # WP cli has no so good enough perms 
+    find ./ -type f -not -perm 644 -not -name ".ftpquota" -exec chmod 644 {} \;; find ./ -type d -not -perm 755 -not -group nobody -exec chmod 755 {} \;
+    wp core verify-checksums &>> ~/replacer.log
+    echo "Replaced core files for ${PWD}" | tee -a ~/replacer.log
 fi
 cd
 done
+
+echo "Logged to $HOME/replacer.log"
+exit 0
