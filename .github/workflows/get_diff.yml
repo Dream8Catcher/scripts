@@ -23,8 +23,6 @@ jobs:
         id: changed-files
         uses: tj-actions/changed-files@v44
         with:
-          files: |
-            books
           dir_names: "true" # return only directory names
           separator: " "
           dir_names_max_depth: 1
