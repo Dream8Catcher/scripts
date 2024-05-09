@@ -27,7 +27,7 @@ jobs:
             books/**
           dir_names: "true" # return only directory names
           separator: " "
-          dir_names_max_depth: 1
+          dir_names_max_depth: 2
 
       - name: List all changed files
         env:
