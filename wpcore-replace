@@ -11,7 +11,7 @@ echo "Found $(wc -l < ~/wplist) installations. About to process them..." | tee -
 
 mapfile -t arr < ~/wplist
 
-for i in "${arr[@]}"; do 
+for i in "${arr[@]}"; do
   cd "$HOME/$i" || exit
   echo "Entered $HOME/$i" | tee -a ~/replacer.log
   if [[ ! -f "./wp-config.php" ]]; then
@@ -21,9 +21,9 @@ for i in "${arr[@]}"; do
     rm -rf wp-includes wp-admin
     echo "Removed wp-includes wp-admin" | tee -a ~/replacer.log
     # To avoid any issues where index.php has invalid perms
-    chmod 644 index.php
+    chmod 644 index.php || exit
     wp core download --version="$CORE_VERSION" --skip-content --force
-    # WP cli has no so good enough perms 
+    # WP cli has no so good enough perms
     find ./ -type f -not -perm 644 -not -name ".ftpquota" -exec chmod 644 {} \;; find ./ -type d -not -perm 755 -not -group nobody -exec chmod 755 {} \;
     wp core verify-checksums &>> ~/replacer.log
     echo "Replaced core files for ${PWD}" | tee -a ~/replacer.log
